@@ -4,9 +4,9 @@
 /*jslint browser */
 
 function make_scheduler(pool_size) {
-    const pool = new Map(); 
+    const pool = new Map();
     let is_paused = false;
-    
+
     function schedule(callback) {
         if (pool.size > pool_size) {
             return;
