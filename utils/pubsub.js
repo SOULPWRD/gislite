@@ -11,6 +11,11 @@ function make_pubsub() {
 
     function emit(event, data) {
         const callbacks = pool.get(event);
+
+        if (!callbacks) {
+            return;
+        }
+
         callbacks.forEach(function (callback) {
             let timer_id = setTimeout(function () {
                 callback(data);
@@ -52,5 +57,12 @@ function make_pubsub() {
         subscribe
     });
 }
+
+//demo const pubsub = make_pubsub();
+//demo pubsub.subscribe(function () {
+//demo     console.log("Hello world");
+//demo }, "hello");
+
+//demo pubsub.emit("hello");
 
 export default Object.freeze(make_pubsub);
