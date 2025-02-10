@@ -3,5 +3,9 @@
     "author": {
         "name": "Martin Pravda"
     },
-    "version": "0.0.1"
+    "version": "0.0.1",
+    "devDependencies": {
+        "acorn": "^8.14.0",
+        "acorn-walk": "^8.3.4"
+    }
 }
