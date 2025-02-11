@@ -53,8 +53,7 @@ function make_index_db(name, version) {
         };
 
         request.onerror = function (event) {
-            const error = event.target.error;
-            callback(undefined, error);
+            callback(undefined, event.target.error);
         };
     }
 
@@ -103,5 +102,17 @@ function make_index_db(name, version) {
         update
     });
 }
+
+//demo const db = make_index_db({
+//demo     name: "name", version: 1
+//demo });
+//demo db.list(function (databases, err) {
+//demo     if (err) {
+//demo         console.log(err);
+//demo         return;
+//demo     }
+//demo
+//demo     console.log(databases);
+//demo });
 
 export default Object.freeze(make_index_db);
