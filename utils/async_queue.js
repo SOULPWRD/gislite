@@ -3,23 +3,15 @@
 
 /*jslint browser */
 
-import make_queue from "./queue.js";
 import make_pubsub from "./pubsub.js";
 import make_scheduler from "./scheduler.js";
 
 function make_async_queue(callback, concurrency_limit = 1) {
     const pubsub = make_pubsub();
-    const queue = make_queue();
     const scheduler = make_scheduler(concurrency_limit);
 
-    function process_task() {
-        const task = queue.pop();
-
-        if (task === undefined) {
-            return pubsub.emit("drain");
-        }
-
-        scheduler.schedule(function (release) {
+    function process_task(task) {
+        scheduler.schedule(function (done) {
             callback(function (data, error) {
                 if (error) {
                     pubsub.emit("error");
@@ -30,12 +22,8 @@ function make_async_queue(callback, concurrency_limit = 1) {
 // done callback is a callback from scheduler signaling to release the callback
 // from the scheduler's map
 
-                release();
-
-// once it's released, process next task
-
-                process_task();
-            });
+                done();
+            }, task.data);
         });
     }
 
@@ -43,31 +31,14 @@ function make_async_queue(callback, concurrency_limit = 1) {
 
 // processing automatically starts with the very first push
 
-        queue.push({
+        process_task({
             callback,
             data
         });
-
-        if (scheduler.is_full() === false) {
-            return process_task();
-        }
-    }
-
-    function pause() {
-        scheduler.pause();
-    }
-
-    function resume() {
-        scheduler.resume();
-    }
-
-    function stop() {
-        queue.clear();
-        scheduler.clear();
     }
 
     function dispose() {
-        stop();
+        scheduler.clear();
         pubsub.clear();
     }
 
@@ -75,12 +46,8 @@ function make_async_queue(callback, concurrency_limit = 1) {
 
 // it's nice to have some additional information about the queue
 
-        const queue_size = queue.size();
-        const running_tasks_size = scheduler.size;
-
         return Object.freeze({
-            queue_size,
-            running_tasks_size
+            running_tasks_size: scheduler.size
         });
     }
 
@@ -94,12 +61,39 @@ function make_async_queue(callback, concurrency_limit = 1) {
         dispose,
         on_drain: register_listener("drain"),
         on_error: register_listener("error"),
-        pause,
+        pause: scheduler.pause,
         properties,
         push,
-        resume,
-        stop
+        resume: scheduler.resume
     });
 }
+
+//done const async_queue = make_async_queue(function (next, num) {
+//done     setTimeout(function () {
+//done         console.log("Async iteration: ", num);
+//done         next();
+//done     }, 1000);
+//done });
+
+//done async_queue.pause();
+
+//done function done() {
+//done     console.log("done");
+//done }
+
+//done async_queue.push(done, 0);
+//done async_queue.push(done, 1);
+//done async_queue.push(done, 2);
+//done async_queue.push(done, 3);
+//done async_queue.push(done, 4);
+
+//done async_queue.resume();
+//done setTimeout(function () {
+//done     async_queue.pause();
+//done });
+
+//done setTimeout(function () {
+//done     async_queue.resume();
+//done }, 2000);
 
 export default Object.freeze(make_async_queue);
