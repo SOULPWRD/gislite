@@ -1,12 +1,25 @@
 // scheduler.js
 // Martin Pravda
 
+// Scheduler is a module for scheduling asyncronous tasks
+// based on the defined concurrency limit.
+// It never processess more tasks concurrently than the given threshold.
+// It has a capability to pause or resume the processing
+// or completely prune scheduled tasks
+
 /*jslint browser */
 
 import make_queue from "./queue.js";
 
-function make_scheduler(pool_size) {
+function make_scheduler(concurrency_limit) {
+
+// "pool" is a map that keeps track of the running tasks
+
     const pool = new Map();
+
+// queue is a place where all tasks come first. Scheduler automatically manages
+// pulling the tasks from the queue into the processing pool.
+
     const queue = make_queue();
     let is_paused = false;
 
@@ -31,8 +44,7 @@ function make_scheduler(pool_size) {
     function schedule(callback) {
         queue.push(callback);
 
-        if (pool.size > pool_size - 1) {
- 
+        if (pool.size > concurrency_limit - 1) {
             return;
         }
 
@@ -54,7 +66,7 @@ function make_scheduler(pool_size) {
     }
 
     function is_full() {
-        return pool.size === pool_size;
+        return pool.size === concurrency_limit;
     }
 
     function is_processing() {
