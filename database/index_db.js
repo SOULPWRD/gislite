@@ -6,32 +6,14 @@
 
 import make_async_queue from "../utils/async_queue.js";
 
-function make_index_db(name, version) {
-    const queue = make_async_queue();
-    const db_request = indexedDB.open(name, version);
-
-    db_request.onerror = function on_error(event) {
-
-// keep this empty for now
-// we have to handle errors somehow
-
-    };
-
-    db_request.onsuccess = function on_success(event) {
-        const db_instance = event.target.result;
-
-        queue.subscribe(function worker(callback, message) {
+function make_index_db(db, name) {
+    const queue = make_async_queue(function worker(callback, message) {
 
 // process the message here and do the magic
 // retrieve and store data to indexdb
 
-            const {
-                document,
-                operation
-            } = message;
-
-        });
-    };
+        callback(message);
+    });
 
 // list all databases
 
@@ -103,16 +85,11 @@ function make_index_db(name, version) {
     });
 }
 
-//demo const db = make_index_db({
-//demo     name: "name", version: 1
-//demo });
-//demo db.list(function (databases, err) {
-//demo     if (err) {
-//demo         console.log(err);
-//demo         return;
-//demo     }
-//demo
-//demo     console.log(databases);
-//demo });
+//demo const name = "gislite";
+//demo const db_request = indexedDB.open(name, 1);
+//demo db_request.onsuccess = function (event) {
+//demo     const db = event.target.result;
+//demo     const index_db = make_index_db(db, name);
+//demo };
 
 export default Object.freeze(make_index_db);
