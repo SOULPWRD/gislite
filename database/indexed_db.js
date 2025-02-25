@@ -1,29 +1,22 @@
-// index_db.js
+// indexed_db.js
 // Martin Pravda
 
 /*jslint browser */
 /*global indexedDB */
 
 import make_async_queue from "../utils/async_queue.js";
+import make_processor from "./processor.js";
 
-function make_index_db(db, name) {
-    const queue = make_async_queue(function worker(callback, message) {
-
-// process the message here and do the magic
-// retrieve and store data to indexdb
-
-        callback(message);
-    });
-
-// list all databases
-
-    function list(callback) {
-        indexedDB.databases().then(function (info) {
-            callback(info);
-        }).catch(function (error) {
-            callback(undefined, error);
-        });
-    }
+function make_index_db({
+    db,
+    name,
+    store_name,
+    concurrency_limit = 1
+}) {
+    const processor = make_processor({db, store_name});
+    const queue = make_async_queue(function (next, message) {
+        processor(next, message);
+    }, concurrency_limit);
 
 // drop the database
 
@@ -44,7 +37,7 @@ function make_index_db(db, name) {
     function get(callback, document) {
         queue.push(callback, {
             document,
-            operation: "READ"
+            operation: "read"
         });
     }
 
@@ -53,7 +46,7 @@ function make_index_db(db, name) {
     function create(callback, document) {
         queue.push(callback, {
             document,
-            operation: "CREATE"
+            operation: "create"
         });
     }
 
@@ -62,16 +55,16 @@ function make_index_db(db, name) {
     function update(callback, document) {
         queue.push(callback, {
             document,
-            operation: "UPDATE"
+            operation: "update"
         });
     }
 
-// remove the record
+// remove the document
 
     function remove(callback, document) {
         queue.push(callback, {
             document,
-            operation: "DELETE"
+            operation: "delete"
         });
     }
 
@@ -79,7 +72,6 @@ function make_index_db(db, name) {
         create,
         drop,
         get,
-        list,
         remove,
         update
     });
@@ -89,7 +81,7 @@ function make_index_db(db, name) {
 //demo const db_request = indexedDB.open(name, 1);
 //demo db_request.onsuccess = function (event) {
 //demo     const db = event.target.result;
-//demo     const index_db = make_index_db(db, name);
+//demo     const index_db = make_index_db(db, name, );
 //demo };
 
 export default Object.freeze(make_index_db);
