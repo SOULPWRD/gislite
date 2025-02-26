@@ -36,7 +36,7 @@ const requestors = {
         return store.get(document);
     }),
     update: make_requestor(function (store, document) {
-        return store.delete(document)
+        return store.put(document);
     })
 };
 

@@ -8,10 +8,10 @@ import make_async_queue from "../utils/async_queue.js";
 import make_processor from "./processor.js";
 
 function make_index_db({
+    concurrency_limit = 1,
     db,
     name,
-    store_name,
-    concurrency_limit = 1
+    store_name
 }) {
     const processor = make_processor({db, store_name});
     const queue = make_async_queue(function (next, message) {
