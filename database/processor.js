@@ -7,16 +7,23 @@ import requestors from "./requestors.js";
 
 function make_processor({
     db,
-    store_name
+    docs_store_name,
+    index_store_name
 }) {
     return function processor(callback, message) {
-        const transaction = db.transaction([store_name], "readwrite");
-        const store = transaction.objectStore(store_name);
+        const transaction = db.transaction([
+            docs_store_name,
+            index_store_name
+        ], "readwrite");
+
+        const docs_store = transaction.objectStore(docs_store_name);
+        const index_store = transaction.objectStore(index_store_name);
         const requestor = requestors[message.operation];
 
         requestor(callback, {
-            message,
-            store
+            docs_store,
+            index_store,
+            message
         });
 
         transaction.onerror = function (event) {

@@ -8,8 +8,16 @@
 /*jslint browser */
 
 function make_requestor(requestor) {
-    return function (callback, {message, store}) {
-        const request = requestor(store, message.document);
+    return function (callback, {
+        docs_store,
+        index_store,
+        message
+    }) {
+        const request = requestor(message.document, {
+            docs_store,
+            index_store
+        });
+
         request.onsuccess = function (event) {
             callback(event.target.result);
         };
@@ -26,17 +34,17 @@ function make_requestor(requestor) {
 }
 
 const requestors = {
-    create: make_requestor(function (store, document) {
-        return store.add(document);
+    create: make_requestor(function (document, {docs_store}) {
+        return docs_store.add(document);
     }),
-    delete: make_requestor(function (store, document) {
-        return store.delete(document);
+    delete: make_requestor(function (document, {docs_store}) {
+        return docs_store.delete(document);
     }),
-    read: make_requestor(function (store, document) {
-        return store.get(document);
+    read: make_requestor(function (document, {docs_store}) {
+        return docs_store.get(document);
     }),
-    update: make_requestor(function (store, document) {
-        return store.put(document);
+    update: make_requestor(function (document, {docs_store}) {
+        return docs_store.put(document);
     })
 };
 

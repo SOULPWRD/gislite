@@ -10,18 +10,25 @@ import make_processor from "./processor.js";
 function make_index_db({
     concurrency_limit = 1,
     db,
-    name,
-    store_name
+    db_name,
+    docs_store_name,
+    index_store_name
 }) {
-    const processor = make_processor({db, store_name});
-    const queue = make_async_queue(function (next, message) {
-        processor(next, message);
-    }, concurrency_limit);
+
+// create a queue processor
+
+    const processor = make_processor({
+        db,
+        docs_store_name,
+        index_store_name
+    });
+
+    const queue = make_async_queue(processor, concurrency_limit);
 
 // drop the database
 
     function drop(callback) {
-        const request = indexedDB.deleteDatabase(name);
+        const request = indexedDB.deleteDatabase(db_name);
 
         request.onsuccess = function (event) {
             callback(event.target.result);
@@ -68,8 +75,16 @@ function make_index_db({
         });
     }
 
+    function create_index(callback, document) {
+        queue.push(callback, {
+            document,
+            operation: "create_index"
+        });
+    }
+
     return Object.freeze({
         create,
+        create_index,
         drop,
         get,
         remove,

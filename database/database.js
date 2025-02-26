@@ -7,31 +7,50 @@
 import make_indexed_db from "./indexed_db.js";
 
 function open(callback, {
-    name,
-    store_name = "docs",
-    version
+    db_name,
+    docs_store_name = "docs",
+    index_store_name = "indexes",
+    version = 1
 }) {
-    const request = indexedDB.open(name, version);
+
+// open the connection
+
+    const request = indexedDB.open(db_name, version);
 
     request.onupgradeneeded = function (event) {
         const db = event.target.result;
 
-// initialize object store
+// initialize object store for the docs and indexes
 
-        db.createObjectStore(store_name, {
+        db.createObjectStore(docs_store_name, {
+            autoIncrement: true,
+            keyPath: "id"
+        });
+
+        db.createObjectStore(index_store_name, {
             autoIncrement: true,
             keyPath: "id"
         });
     };
 
     request.onsuccess = function (event) {
-        const db = event.target.result;
-        callback(make_indexed_db({db, name, store_name}));
+        const db_instance = event.target.result;
+        const indexed_db = make_indexed_db({
+            db: db_instance,
+            db_name,
+            docs_store_name,
+            index_store_name
+        });
+
+        callback(indexed_db);
     };
 
     request.onerror = function (event) {
         const error = event.target.error;
-        callback(undefined, error);
+        callback(undefined, {
+            error,
+            message: `Connection to the database ${db_name}:v${version} has failed.`
+        });
     };
 }
 
@@ -78,7 +97,7 @@ function list(callback) {
 
 //demo parseq.sequence([
 //demo     open_connection({
-//demo         name: "test",
+//demo         db_name: "test",
 //demo         version: 1
 //demo     }),
 //demo     add_data({
