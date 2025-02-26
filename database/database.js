@@ -62,10 +62,9 @@ function list(callback) {
 //demo }
 
 //demo function read_data(callback, {db, result}) {
-//demo     console.log(result);
 //demo     db.get(function (data) {
 //demo         callback(data);
-//demo     }, result.id);
+//demo     }, result);
 //demo }
 
 //demo function log(data, reason) {
@@ -83,7 +82,7 @@ function list(callback) {
 //demo         version: 1
 //demo     }),
 //demo     add_data({
-//demo         id: 1,
+//demo         id: 2,
 //demo         name: "foo"
 //demo     }),
 //demo     read_data

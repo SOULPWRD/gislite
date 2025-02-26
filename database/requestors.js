@@ -10,13 +10,13 @@
 function make_requestor(requestor) {
     return function (callback, {message, store}) {
         const request = requestor(store, message.document);
-        request.onsuccess = function () {
-            callback(message.document);
+        request.onsuccess = function (event) {
+            callback(event.target.result);
         };
 
         request.onerror = function (event) {
             callback(undefined, {
-                error: event,
+                error: event.target.error,
                 message: `
                     An error occurred during the request
                     on the operation ${message.operation}`

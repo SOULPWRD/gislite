@@ -21,7 +21,7 @@ function make_processor({
 
         transaction.onerror = function (event) {
             return callback(undefined, {
-                error: event.error,
+                error: event.target.error,
                 message: "A transaction error has occured."
             });
         };
