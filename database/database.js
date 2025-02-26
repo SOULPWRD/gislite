@@ -5,31 +5,36 @@
 /*global indexedDB */
 
 import make_indexed_db from "./indexed_db.js";
+import config from "./config.js";
 
 function open(callback, {
     db_name,
-    docs_store_name = "docs",
-    index_store_name = "indexes",
     version = 1
 }) {
 
 // open the connection
-
+    const {stores} = config;
     const request = indexedDB.open(db_name, version);
 
     request.onupgradeneeded = function (event) {
         const db = event.target.result;
 
-// initialize object store for the docs and indexes
+// initialize the object stores for the docs and indexes
 
-        db.createObjectStore(docs_store_name, {
-            autoIncrement: true,
-            keyPath: "id"
-        });
+        stores.forEach(function ({
+            autoIncrement,
+            keyPath,
+            name
+        }) {
 
-        db.createObjectStore(index_store_name, {
-            autoIncrement: true,
-            keyPath: "id"
+// first, check if stores have been already initialized
+
+            if (db.objectStoreNames.contains(name) === false) {
+                db.createObjectStore(name, {
+                    autoIncrement,
+                    keyPath
+                });
+            }
         });
     };
 
@@ -37,9 +42,7 @@ function open(callback, {
         const db_instance = event.target.result;
         const indexed_db = make_indexed_db({
             db: db_instance,
-            db_name,
-            docs_store_name,
-            index_store_name
+            db_name
         });
 
         callback(indexed_db);
@@ -49,7 +52,9 @@ function open(callback, {
         const error = event.target.error;
         callback(undefined, {
             error,
-            message: `Connection to the database ${db_name}:v${version} has failed.`
+            message: `
+                Connection to the database ${db_name}:v${version} has failed.
+            `
         });
     };
 }

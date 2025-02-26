@@ -10,18 +10,12 @@ import make_processor from "./processor.js";
 function make_index_db({
     concurrency_limit = 1,
     db,
-    db_name,
-    docs_store_name,
-    index_store_name
+    db_name
 }) {
 
 // create a queue processor
 
-    const processor = make_processor({
-        db,
-        docs_store_name,
-        index_store_name
-    });
+    const processor = make_processor(db);
 
     const queue = make_async_queue(processor, concurrency_limit);
 

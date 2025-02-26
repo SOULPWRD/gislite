@@ -4,12 +4,14 @@
 /*jslint browser */
 
 import requestors from "./requestors.js";
+import config from "./config.js";
 
-function make_processor({
-    db,
-    docs_store_name,
-    index_store_name
-}) {
+function make_processor(db) {
+    const {
+        docs_store_name,
+        index_store_name
+    } = config;
+
     return function processor(callback, message) {
         const transaction = db.transaction([
             docs_store_name,
